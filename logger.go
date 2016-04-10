@@ -24,6 +24,8 @@ const (
 	WARNING = Severity("warning")
 	// INFO - info severity
 	INFO = Severity("info")
+	// NOTICE - notice severity
+	NOTICE = Severity("notice")
 	// DEBUG - debug severity
 	DEBUG = Severity("debug")
 )
@@ -32,6 +34,7 @@ var colorMap = map[Severity]func(...interface{}) string{
 	ERROR:   color.New(color.FgRed).SprintFunc(),
 	WARNING: color.New(color.FgYellow).SprintFunc(),
 	INFO:    color.New(color.FgGreen).SprintFunc(),
+	NOTICE:  color.New(color.FgCyan).SprintFunc(),
 	DEBUG:   color.New(color.FgBlue).SprintFunc(),
 }
 
@@ -58,7 +61,7 @@ func NewLog(processor func(line *LogLine)) *Log {
 
 	l := &Log{
 		LogStream:   stream,
-		LogSeverity: map[Severity]bool{INFO: true, ERROR: true, WARNING: true, DEBUG: false},
+		LogSeverity: map[Severity]bool{INFO: true, ERROR: true, WARNING: true, NOTICE: true, DEBUG: false},
 		processor:   processor,
 		wg:          wg,
 	}
@@ -78,6 +81,11 @@ func (l *Log) log(severity Severity, m string) {
 	if l.LogSeverity[severity] {
 		l.LogStream <- &LogLine{m, severity}
 	}
+}
+
+// Notice - puts notice into chan
+func (l *Log) Notice(m string) {
+	l.log(NOTICE, m)
 }
 
 // Error - puts error into chan

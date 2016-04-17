@@ -3,7 +3,9 @@ package logger
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"runtime"
 	"sync"
+	"time"
 )
 
 // Log - logger struct
@@ -65,6 +67,16 @@ func NewLog(processor func(line *LogLine)) *Log {
 		processor:   processor,
 		wg:          wg,
 	}
+
+	go func(l *Log) {
+		for {
+			ticker := time.NewTicker(30 * time.Second)
+			select {
+			case <-ticker.C:
+				l.Debug(fmt.Sprintf("Goroutines count: %v", runtime.NumGoroutine()))
+			}
+		}
+	}(l)
 
 	wg.Add(1)
 	go func(stream chan *LogLine, processor func(line *LogLine), wg *sync.WaitGroup) {

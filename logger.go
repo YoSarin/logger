@@ -49,15 +49,34 @@ func (s *Severity) ColoredString() string {
 type LogLine struct {
 	Message  string
 	Severity Severity
+	Time     time.Time
+	File     string
+}
+
+// Config - logger config
+type Config struct {
+	GoRoutinesLogTicker time.Duration
+}
+
+func (c *Config) merge(changes *Config) *Config {
+	if changes.GoRoutinesLogTicker > 0 {
+		c.GoRoutinesLogTicker = changes.GoRoutinesLogTicker
+	}
+	return c
+}
+
+var defaultConf = Config{
+	GoRoutinesLogTicker: 0 * time.Second,
 }
 
 // Print - will print logline to stdout
 func (l *LogLine) Print() {
-	fmt.Printf("[%v] %v\n", l.Severity.ColoredString(), l.Message)
+	fmt.Printf("[%v] %v \"%v\"\n", l.Severity.ColoredString(), l.Message, l.File)
 }
 
 // NewLog - creates new logger
-func NewLog(processor func(line *LogLine)) *Log {
+func NewLog(processor func(line *LogLine), conf *Config) *Log {
+	c := defaultConf.merge(conf)
 	stream := make(chan *LogLine)
 	wg := &sync.WaitGroup{}
 
@@ -69,8 +88,14 @@ func NewLog(processor func(line *LogLine)) *Log {
 	}
 
 	go func(l *Log) {
+
+		if c.GoRoutinesLogTicker <= 0 {
+			return
+		}
+
+		ticker := time.NewTicker(c.GoRoutinesLogTicker)
+		defer ticker.Stop()
 		for {
-			ticker := time.NewTicker(30 * time.Second)
 			select {
 			case <-ticker.C:
 				l.Debug(fmt.Sprintf("Goroutines count: %v", runtime.NumGoroutine()))
@@ -91,7 +116,13 @@ func NewLog(processor func(line *LogLine)) *Log {
 
 func (l *Log) log(severity Severity, m string) {
 	if l.LogSeverity[severity] {
-		l.LogStream <- &LogLine{m, severity}
+		_, filename, line, _ := runtime.Caller(2)
+		l.LogStream <- &LogLine{
+			m,
+			severity,
+			time.Now(),
+			fmt.Sprintf("%v:%v", filename, line),
+		}
 	}
 }
 

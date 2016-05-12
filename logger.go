@@ -117,11 +117,11 @@ func NewLog(processor func(line *LogLine), conf *Config) *Log {
 func (l *Log) log(severity Severity, m string, values ...interface{}) {
 	if l.LogSeverity[severity] {
 		_, filename, line, _ := runtime.Caller(2)
-		message := fmt.Sprintf(m, values)
+		message := m
 		fmt.Println(values)
 		fmt.Println(len(values))
 		if len(values) == 0 {
-			message = m
+			// message = fmt.Sprintf(m, values)
 		}
 		l.LogStream <- &LogLine{
 			message,

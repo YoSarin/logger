@@ -118,6 +118,8 @@ func (l *Log) log(severity Severity, m string, values ...interface{}) {
 	if l.LogSeverity[severity] {
 		_, filename, line, _ := runtime.Caller(2)
 		message := fmt.Sprintf(m, values)
+		fmt.Println(values)
+		fmt.Println(len(values))
 		if len(values) == 0 {
 			message = m
 		}

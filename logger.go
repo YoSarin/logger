@@ -118,7 +118,7 @@ func (l *Log) log(severity Severity, m string, values ...interface{}) {
 	if l.LogSeverity[severity] {
 		_, filename, line, _ := runtime.Caller(2)
 		l.LogStream <- &LogLine{
-			fmt.Sprintf(m, values),
+			"test",
 			severity,
 			time.Now(),
 			fmt.Sprintf("%v:%v", filename, line),

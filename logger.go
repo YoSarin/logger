@@ -117,8 +117,12 @@ func NewLog(processor func(line *LogLine), conf *Config) *Log {
 func (l *Log) log(severity Severity, m string, values ...interface{}) {
 	if l.LogSeverity[severity] {
 		_, filename, line, _ := runtime.Caller(2)
+		message := m
+		if len(values) > 0 {
+			message = fmt.Sprintf(m, values...)
+		}
 		l.LogStream <- &LogLine{
-			fmt.Sprintf(m, values),
+			message,
 			severity,
 			time.Now(),
 			fmt.Sprintf("%v:%v", filename, line),
@@ -128,27 +132,27 @@ func (l *Log) log(severity Severity, m string, values ...interface{}) {
 
 // Notice - puts notice into chan
 func (l *Log) Notice(m string, values ...interface{}) {
-	l.log(NOTICE, m, values)
+	l.log(NOTICE, m, values...)
 }
 
 // Error - puts error into chan
 func (l *Log) Error(m string, values ...interface{}) {
-	l.log(ERROR, m, values)
+	l.log(ERROR, m, values...)
 }
 
 // Info - puts info into chan
 func (l *Log) Info(m string, values ...interface{}) {
-	l.log(INFO, m, values)
+	l.log(INFO, m, values...)
 }
 
 // Warning - puts warning into chan
 func (l *Log) Warning(m string, values ...interface{}) {
-	l.log(WARNING, m, values)
+	l.log(WARNING, m, values...)
 }
 
 // Debug - puts debug into chan
 func (l *Log) Debug(m string, values ...interface{}) {
-	l.log(DEBUG, m, values)
+	l.log(DEBUG, m, values...)
 }
 
 // Close - will close log and wait for log processor to finish

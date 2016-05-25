@@ -101,7 +101,7 @@ func NewLog(processor func(line *LogLine), conf *Config) *Log {
 				mem := &runtime.MemStats{}
 				runtime.ReadMemStats(mem)
 				l.Debug(fmt.Sprintf("Goroutines count: %v", runtime.NumGoroutine()))
-				l.Debug(fmt.Sprintf("MEM allocated: %v", mem.TotalAlloc))
+				l.Debug(fmt.Sprintf("MEM allocated (MB): %v", mem.Sys/(1024.0*1024.0)))
 			}
 		}
 	}(l)
